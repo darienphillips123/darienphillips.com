@@ -646,6 +646,18 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.95rem; font-var
 .dialog h2 { font-size: 1.4rem; font-stretch: 110%; }
 .dialog .x { justify-self: end; border: 0; background: var(--soft); color: var(--ink); border-radius: 999px; width: 36px; height: 36px; cursor: pointer; font-size: 1.2rem; }
 .optlist { display: grid; gap: 8px; }
+.sms-opts { display: grid; gap: 10px; }
+.sms-opt { display: grid; gap: 6px; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--soft); color: var(--ink); text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
+.sms-opt:hover, .sms-opt:focus-visible { border-color: var(--pa); transform: translateY(-1px); }
+.sms-opt.first { border-color: var(--pa); background: var(--pa-soft, var(--soft)); }
+.sms-k { font: 600 0.72rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.sms-opt.first .sms-k { color: var(--pa-text, var(--pa)); }
+.sms-b { justify-self: end; max-width: 88%; background: #0B84FE; color: #fff; padding: 9px 13px; border-radius: 18px 18px 4px 18px; font-size: 0.98rem; line-height: 1.35; }
+.sms-go { font-weight: 700; font-size: 0.9rem; color: var(--pa-text, var(--pa)); }
+.sms-opt.own { grid-template-columns: 1fr auto; align-items: center; background: transparent; }
+@media (hover: none) { .sms-desk { display: none; } }
+/* Floating buttons step aside while a pop-up is open */
+body:has(#modal:not([hidden])) #chat-fab, body:has(#modal:not([hidden])) .dream-fab { display: none; }
 .optlist a, .optlist button { justify-content: center; }
 
 /* A home's own page (links from social posts): preview, sign-in, then everything */
@@ -1913,11 +1925,67 @@ document.addEventListener('click', (e) => {
     beacon('click', { h, s, p: info.p || '', b: info.b || '', r: info.r || '', pg: info.pg || navName(), u: raw.slice(0, 500) });
     logStep('Opened ' + h + (s ? ' on ' + s : ''));
   } else if (/^(sms|tel|mailto):/i.test(raw)) {
+    if (raw === SMS_PLAIN) return; // opens the message chooser; the message they pick is logged instead
     const how = { sms: 'Texted', tel: 'Called', mai: 'Emailed' }[raw.slice(0, 3).toLowerCase()];
-    beacon('click', { h: how + ' Darien', s: { Texted: 'Text', Called: 'Phone', Emailed: 'Email' }[how], pg: navName(), u: '' });
+    beacon('click', { h: how + ' Darien' + (a.dataset.msg ? ': ' + a.dataset.msg : ''), s: { Texted: 'Text', Called: 'Phone', Emailed: 'Email' }[how], pg: navName(), u: '' });
     logStep('Tapped to ' + { Texted: 'text', Called: 'call', Emailed: 'email' }[how] + ' Darien');
   }
 }, true);
+
+/* ===== Text Darien: pick a ready-made message first =====
+   Every plain "Text Darien" button opens this list. The message that fits the page comes first.
+   Tapping one opens iMessage or Android Messages with it typed in; they can still edit it before sending.
+   Buttons that already carry a message (like "Ask about this home") skip the list. */
+const SMS_PLAIN = 'sms:+12098826469';
+const SMS_FOR_PAGE = {
+  home: 'Hi Darien! I found you on your website and I\'d like help finding a home.',
+  finder: 'Hi Darien, can you help me find a home that fits what I\'m looking for?',
+  portal: 'Hi Darien, can you set up my own custom home search?',
+  search: 'Hi Darien, I\'m looking at homes on your map. Can you help me narrow them down?',
+  assumable: 'Hi Darien, I\'m interested in assumable homes with a low rate. Can you help me find one?',
+  'zero-down': 'Hi Darien, I want to see if I can buy with $0 down. Can you walk me through it?',
+  payment: 'Hi Darien, I\'d like to find homes that fit my monthly budget. Can you help?',
+  'new-builds': 'Hi Darien, I\'m interested in new builds. Can you register me before I visit a model home?',
+  stockton: 'Hi Darien, I\'m interested in $0-down new homes in Stockton. Can you help?',
+  placer: 'Hi Darien, I\'m interested in Placer homes around $2,500 a month. Can you help?',
+  refinance: 'Hi Darien, I\'d like to see if refinancing could lower my payment.',
+  build: 'Hi Darien, I\'m thinking about building a home on a lot. Where do I start?',
+  adu: 'Hi Darien, I\'m looking for a home with room for an ADU or in-law unit.',
+  guide: 'Hi Darien, I\'m a first-time buyer and not sure where to start. Can you help?',
+  alerts: 'Hi Darien, can you send me new homes by email that match what I want?',
+  cart: 'Hi Darien, can you send me more info on the homes in my cart?',
+  about: 'Hi Darien! I found you on your website and I\'d like to talk about buying a home.'
+};
+const SMS_GENERAL = [
+  ['Ready to start', 'Hi Darien! I\'m ready to start looking for a home. When can we talk?'],
+  ['Just questions', 'Hi Darien, I have a few questions about buying a home. When\'s a good time to chat?'],
+  ['Tour a home', 'Hi Darien, I\'d like to tour a home. What times do you have this week?'],
+  ['Selling too', 'Hi Darien, I\'m thinking about selling my home. Can you tell me what it\'s worth?']
+];
+const smsHref = (body) => SMS_PLAIN + (body ? '?&body=' + encodeURIComponent(body) : '');
+function smsWithCity(msg) {
+  // If they picked a city with the city picker, add it as its own sentence
+  const city = cityNameOf(locCity() || '');
+  return city && !['refinance', 'cart', 'stockton', 'placer'].includes(CURRENT) ? msg + ' I\'m looking in ' + city + '.' : msg;
+}
+function openTextChooser() {
+  const mine = SMS_FOR_PAGE[CURRENT] ? smsWithCity(SMS_FOR_PAGE[CURRENT]) : '';
+  const opts = (mine ? [['Suggested for this page', mine]] : []).concat(SMS_GENERAL.filter(([, m]) => m !== mine));
+  const bubble = ([label, msg], i) => '<a class="sms-opt' + (i === 0 && mine ? ' first' : '') + '" href="' + esc(smsHref(msg)) + '" data-msg="' + esc(label) + '">' +
+    '<span class="sms-k">' + esc(label) + '</span><span class="sms-b">' + esc(msg) + '</span><span class="sms-go">Use this text →</span></a>';
+  openModal('<p class="mono eyebrow">Text Darien · 209.882.6469</p><h2 id="modal-title">Pick a text to start with</h2>' +
+    '<p class="note" style="margin:0">Tap one and your messages app opens with it typed in. You can change it before you send.</p>' +
+    '<div class="sms-opts">' + opts.map(bubble).join('') +
+      '<a class="sms-opt own" href="' + SMS_PLAIN + '" data-msg="Write my own"><span class="sms-k">Write my own</span><span class="sms-go">Open a blank text →</span></a></div>' +
+    '<p class="note sms-desk">On a computer? Text <b class="sel">209.882.6469</b> from your phone.</p>',
+    (d) => d.querySelectorAll('.sms-opt').forEach((o) => o.addEventListener('click', () => setTimeout(closeModal, 300))));
+}
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href]');
+  if (!a || a.getAttribute('href') !== SMS_PLAIN || a.closest('.sms-opts')) return;
+  e.preventDefault();
+  openTextChooser();
+});
 
 function choosePlace(name) {
   const t = TOWN[name.toLowerCase()];
