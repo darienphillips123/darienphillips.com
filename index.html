@@ -646,6 +646,20 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.95rem; font-var
 .dialog h2 { font-size: 1.4rem; font-stretch: 110%; }
 .dialog .x { justify-self: end; border: 0; background: var(--soft); color: var(--ink); border-radius: 999px; width: 36px; height: 36px; cursor: pointer; font-size: 1.2rem; }
 .optlist { display: grid; gap: 8px; }
+#ig-latest .shead { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
+.ig-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(210px, 240px); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 2px 10px; scrollbar-width: thin; }
+.ig-card { scroll-snap-align: start; display: grid; grid-template-rows: auto 1fr; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); overflow: hidden; }
+.ig-cover { position: relative; display: block; aspect-ratio: 9 / 13; background: #0E1A26; overflow: hidden; }
+.ig-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+.ig-cover:hover img { transform: scale(1.03); }
+.ig-pill { position: absolute; left: 8px; right: 8px; bottom: 8px; padding: 6px 10px; border-radius: 10px; background: var(--pa); color: var(--pa-ink); font-weight: 700; font-size: .82rem; line-height: 1.25; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+.ig-pill.done { background: #1F2933; color: #fff; right: auto; }
+.ig-body { display: grid; gap: 8px; align-content: start; padding: 12px; }
+.ig-body .eyebrow { margin: 0; }
+.ig-body b { font-size: .98rem; line-height: 1.3; }
+.ig-body .btn { justify-self: start; }
+.ig-watch { font-weight: 700; font-size: .9rem; color: var(--pa-text, var(--pa)); text-decoration: none; }
+.ig-by { color: var(--muted); font-size: .78rem; }
 .sms-opts { display: grid; gap: 10px; }
 .sms-opt { display: grid; gap: 6px; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--soft); color: var(--ink); text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
 .sms-opt:hover, .sms-opt:focus-visible { border-color: var(--pa); transform: translateY(-1px); }
@@ -2518,7 +2532,7 @@ def('home', {
   ctas: () => '<button type="button" class="btn btn-pa" data-go="finder">Find your home</button><button type="button" class="hero-quiet" data-go="search">Search every home</button>',
   html() {
     const tiles = HOME_PATHS.map((k) => '<button type="button" class="tile" data-go="' + k + '" style="--tc:' + PAGES[k].color + '">' + thumbBox(k) + '<div class="body"><b>' + esc(PAGES[k].tileTitle || PAGES[k].nav) + '</b><span>' + esc(TILE_TEXT[k]) + '</span></div></button>').join('');
-    return helpHtml() + locationBarHtml() + '<section class="blk" id="tiles"><div class="wrap"><div class="shead"><div><p class="mono eyebrow">Start here</p><h2>What are you looking for?</h2><p>New to buying? Start with the beginner\'s guide.</p></div></div><div class="tiles compact">' + tiles + '</div></div></section>' + touredHtml() + touredMarqueeHtml() +
+    return helpHtml() + locationBarHtml() + '<section class="blk" id="tiles"><div class="wrap"><div class="shead"><div><p class="mono eyebrow">Start here</p><h2>What are you looking for?</h2><p>New to buying? Start with the beginner\'s guide.</p></div></div><div class="tiles compact">' + tiles + '</div></div></section>' + touredHtml() + igLatestHtml() + touredMarqueeHtml() +
       sellerHtml() + '<section class="blk"><div class="wrap"><div class="panel accent bar"><div><b>Get homes by email</b><p class="note">Tell Darien what you want and get new matches every day, or ask for your own custom portal.</p></div><button type="button" class="btn btn-pa" data-go="alerts">Sign up</button></div></div></section>';
   }
 });
@@ -2602,7 +2616,8 @@ const TOURED_MEDIA = {
   't:ridge-park-loomis': { photo: 'https://photos.zillowstatic.com/fp/cac6e1c31cfe3d7565b45a729b2028c0-d_d.jpg', credit: 'REAL PHOTO, Zillow listing photo, aerial front view, Zillow photo 3 of 86', video: 'https://www.instagram.com/reel/De7Q5GZyqYJ/embed/', watch: 'https://www.instagram.com/reel/De7Q5GZyqYJ/', plat: 'Instagram' },
   't:cornwall-rocklin': { photo: 'https://photos.zillowstatic.com/fp/ac07c90610729589746756f36bd5036e-d_d.jpg', photos: ['https://photos.zillowstatic.com/fp/ac07c90610729589746756f36bd5036e-d_d.jpg', 'https://photos.zillowstatic.com/fp/5dc51bd67ab2fd8a30808208e84b1baa-d_d.jpg', 'https://photos.zillowstatic.com/fp/a60c046de98fbc09ac9fa05de42d9aaa-d_d.jpg', 'https://photos.zillowstatic.com/fp/eb319e25af0ccd3fe1fe5c255577ce18-d_d.jpg'], photoLabels: ['A dusk front elevated', 'B dusk front second angle', 'C daytime rear from pool', 'D dusk front best of 77-82'], credit: 'REAL PHOTO, Zillow listing photos. A: photo 1 of 83, dusk front, elevated. B: photo 2 of 83, dusk front, second angle. C: photo 28 of 83, daytime rear from pool. D: photo 82 of 83, dusk front, best of photos 77 to 82. Darien picked all four, mixed together, Nov 9.', video: 'https://www.instagram.com/reel/DfbX0B1STYQ/embed/', watch: 'https://www.instagram.com/reel/DfbX0B1STYQ/', plat: 'Instagram' },
   'ser': { photo: 'https://mediarem.metrolist.net/metrolist/listingpics/bigphoto/2026/09/21/16a81d77-1658-4c22-b2b9-2c013064d826.jpg', credit: 'Listing photo via MetroList', video: 'https://www.instagram.com/reel/DfSUUIJyqGq/embed/', watch: 'https://www.instagram.com/reel/DfSUUIJyqGq/', plat: 'Instagram' },
-  'palm': { photo: 'https://mediarem.metrolist.net/metrolist/listingpics/bigphoto/2026/10/15/65fe65dd-29aa-41f2-ae83-a54e37dbf999.jpg', credit: 'Aerial listing photo via MetroList', video: 'https://www.instagram.com/reel/DfQIcvGyUNP/embed/', watch: 'https://www.instagram.com/reel/DfQIcvGyUNP/', plat: 'Instagram' },
+  // Nov 24, 2026: the MetroList photo link died after the Nov 3 price cut (404). Now Zillow photo 1 of 86, aerial with the pool.
+  'palm': { photo: 'https://photos.zillowstatic.com/fp/77d22c09632c22be365bd9ba2e3d03da-cc_ft_960.jpg', credit: 'REAL PHOTO, Zillow listing photo, aerial view with the pool, Zillow photo 1 of 86', video: 'https://www.instagram.com/reel/DfQIcvGyUNP/embed/', watch: 'https://www.instagram.com/reel/DfQIcvGyUNP/', plat: 'Instagram' },
   'haven': { photo: 'https://bluemountaincommunities.com/wp-content/uploads/2024/02/BMC_Oakhaven_-Plan2_B_CS_07-1600x1120.jpg', credit: 'Builder photo, Blue Mountain Communities', video: 'https://www.instagram.com/reel/DfQzh2jyHQo/embed/', watch: 'https://www.instagram.com/reel/DfQzh2jyHQo/', plat: 'Instagram' },
   '10732-stevie-dr': { photo: 'https://www.centurycommunities.com/globalassets/century/assets/elevations--amenities/ccs/ccs--ca/nor-cal/heritage/updated-elevations/plan-7-b-55x100-plan-7-8-9-elev-b-craftsman-22.jpg?width=1155&height=650&mode=crop&format=webp&v=409', credit: 'Builder photo, Century Communities', video: 'https://www.instagram.com/reel/DfYhGrmyWOC/embed/', watch: 'https://www.instagram.com/reel/DfYhGrmyWOC/', plat: 'Instagram' },
   't:oak-rock-folsom': { photo: 'https://pi.movoto.com/p/102/226095956_0_mu6iZv_p.webp', credit: 'Aerial photo from the prior listing of this home', video: 'https://www.instagram.com/reel/DfKiQROyqLb/embed/', watch: 'https://www.instagram.com/reel/DfKiQROyqLb/', plat: 'Instagram' },
@@ -2630,7 +2645,8 @@ function touredVideoCell(m, poster) {
     return '<div class="lux-video"><div class="lux-video-fallback">' + note + '</div></div>';
   }
   const nav = photos.length > 1 ? '<div class="photo-nav"><button type="button" data-photo-prev>Prev photo</button><span data-photo-count>Photo 1 of ' + photos.length + (labels[0] ? ', ' + esc(labels[0]) : '') + '</span><button type="button" data-photo-next>Next photo</button></div>' : '';
-  const posterHtml = '<img src="' + esc(photos[0]) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-tour-photo>';
+  // If a listing photo link dies (listings swap photos), hide the broken image instead of showing an empty box
+  const posterHtml = '<img src="' + esc(photos[0]) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-tour-photo onerror="this.style.visibility=\'hidden\'" onload="this.style.visibility=\'\'">';
   const play = m.watch ? '<span class="lux-play"><span aria-hidden="true">▶</span> Watch the tour on ' + esc(plat) + '</span>' : '<span class="lux-play">' + esc(m.tourNote || 'Tour filmed Nov 9, 2026') + '</span>';
   const posterLink = m.watch
     ? '<a class="lux-video-poster" href="' + esc(m.watch) + '" target="_blank" rel="noopener" aria-label="Watch Darien\'s tour on ' + esc(plat) + ', opens in a new tab">' + posterHtml + play + '</a>'
@@ -2861,6 +2877,48 @@ function touredStripHtml() {
       '<div class="actions">' + details(o.info) + ' ' + cartBtn(o.cartKey, o.title, o.price) + '</div></article>').join('') +
     '</div></div></section>';
 }
+/* ===== Latest tours on Instagram (@darien.phillips), newest first =====
+   Taken from the reel captions on Nov 24, 2026: city from the hashtags, headline and deal news from the caption,
+   the comment keyword, and the listing agent courtesy line. No addresses or prices: the captions don't give them,
+   so each card offers "Text me <keyword>" for details. Covers are stills from each reel, saved in img/.
+   To add a new reel: put its cover at img/ig-<reel id>.jpg and add a line at the top of this list. */
+const IG_LATEST = [
+  { id: 'DgI0MmnyGKP', date: 'Nov 24', city: 'El Dorado Hills', h: 'Tuscan-inspired estate with Folsom Lake views, an infinity pool and a wine room', deal: 'Just cut $100,000', kw: '5192', by: 'Jenica Williams, Keller Williams Realty' },
+  { id: 'DgIhyyWSq1u', date: 'Nov 24', city: 'Folsom', h: 'Single-story home with a pool on a half-acre lot', status: 'sold', kw: 'TRA' },
+  { id: 'DgHCSOVyGDZ', date: 'Nov 23', city: 'Lathrop', h: 'Two-story new build with a loft, a tech/study and a California Room', deal: '2/1 buydown: 3.5% in year one on select homes', kw: 'EAR' },
+  { id: 'DgF4LkUSC4S', date: 'Nov 23', city: 'Folsom', h: 'Mediterranean hillside home with a gourmet kitchen, a loft and a bonus room', kw: 'TOB', by: 'Audrey Kim, eXp Realty of California' },
+  { id: 'DgEiyaoyPYT', date: 'Nov 22', city: 'Folsom', h: 'Sunset and skyline views, a two-island kitchen and a movie theater downstairs', kw: 'MADY', by: 'M Wardell Johnson, Johnson & Associates Real Estate' },
+  { id: 'DgDhXAlha1H', date: 'Nov 22', city: 'El Dorado Hills', h: 'Brand new home with a Thermador kitchen and a back kitchen to match', kw: 'REES', by: 'Tiffany M. Costanzo, Sorelle Properties' },
+  { id: 'DgBKboLSr87', date: 'Nov 21', city: 'El Dorado Hills', h: 'Pool estate built for gathering and celebrating', kw: '612', by: 'Rachel Adams Lee, Keller Williams Realty' },
+  { id: 'DgAq-l2ysp5', date: 'Nov 21', city: 'Lathrop', h: 'Brand new home made for slow evenings in the California Room', deal: '3.5% in year one with the 2/1 buydown', kw: 'ACC' },
+  { id: 'Df8tl1JyF9m', date: 'Nov 19', city: 'Manteca', h: 'Lakefront home with a private dock and sunset views over the water', deal: 'Assumable at 4.25% (lender approval) · Just cut $33,000', kw: 'RIVA', by: 'Natalia Diryawush, J.Peter Realtors' },
+  { id: 'Df8HklGhN2V', date: 'Nov 19', city: 'El Dorado Hills', h: 'Single story inside the Serrano gates', status: 'sold', kw: 'TOR', by: 'Lauren Anderson, Coldwell Banker Realty' },
+  { id: 'Df7oxKyyNn2', date: 'Nov 19', city: 'Modesto', h: 'Two-story new build with a den and a loft that flex with you', deal: '4.99% for the first 5 years, sign by Nov 30', kw: 'DEN' },
+  { id: 'Df54pIXyR8h', date: 'Nov 18', city: 'El Dorado Hills', h: 'Single-story home with sunset views', status: 'pending', kw: 'MOSS', by: 'Maura Tierney, Compass' }
+];
+function igLatestHtml() {
+  const loc = cityNameOf(locCity() || '');
+  const inCity = loc ? IG_LATEST.filter((r) => r.city === loc) : [];
+  const list = inCity.length ? inCity : IG_LATEST;
+  const card = (r) => {
+    const done = r.status === 'sold' || r.status === 'pending';
+    const body = done ? 'Hi Darien, I saw ' + r.kw + ' on your website. Can you send me similar homes in ' + r.city + '?'
+      : 'Hi Darien, I saw ' + r.kw + ' on your website. Can you send me the details?';
+    const pill = r.status === 'sold' ? '<span class="ig-pill done">Just sold</span>' : r.status === 'pending' ? '<span class="ig-pill done">Pending</span>' : (r.deal ? '<span class="ig-pill">' + esc(r.deal) + '</span>' : '');
+    return '<article class="ig-card">' +
+      '<a class="ig-cover" href="https://www.instagram.com/reel/' + r.id + '/" target="_blank" rel="noopener" aria-label="Watch the ' + esc(r.city) + ' tour on Instagram">' +
+        '<img src="img/ig-' + r.id + '.jpg" alt="' + esc(r.h) + ', ' + esc(r.city) + '" loading="lazy" decoding="async">' + pill + '</a>' +
+      '<div class="ig-body"><p class="mono eyebrow">' + esc(r.city) + ' · ' + esc(r.date) + '</p><b>' + esc(r.h) + '</b>' +
+        '<a class="btn btn-pa btn-sm" href="sms:+12098826469?&body=' + encodeURIComponent(body) + '" data-msg="Instagram ' + esc(r.kw) + '">' + (done ? 'Text for similar homes' : 'Text me ' + esc(r.kw)) + '</a>' +
+        '<a class="ig-watch" href="https://www.instagram.com/reel/' + r.id + '/" target="_blank" rel="noopener">Watch the tour ↗</a>' +
+        (r.by ? '<small class="ig-by">Courtesy of ' + esc(r.by) + '</small>' : '') + '</div></article>';
+  };
+  return '<section class="blk" id="ig-latest"><div class="wrap"><div class="shead"><div><p class="mono eyebrow">Just posted</p><h2>Latest tours on Instagram</h2>' +
+    '<p>Homes Darien toured this week' + (inCity.length ? ' in ' + esc(loc) : '') + '. Swipe to see more, and text the keyword for the details.</p></div>' +
+    '<a class="btn btn-line btn-sm" href="https://www.instagram.com/darien.phillips/" target="_blank" rel="noopener">@darien.phillips ↗</a></div>' +
+    '<div class="ig-row">' + list.map(card).join('') + '</div></div></section>';
+}
+
 function touredHtml() {
   if (typeof PROPS === 'undefined') return '';
   if (typeof CARD_PROP !== 'undefined') {
